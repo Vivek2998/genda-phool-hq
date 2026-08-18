@@ -100,6 +100,8 @@
           <p class="say-small say-bot">believe me, sachi 🌼</p>
 
           <div class="strip" id="gallery"></div>
+
+          <p class="aday"><span>A day just for you</span></p>
         </div>
 
 
@@ -131,7 +133,6 @@
              aap ho hi itni achhi ki I just don&rsquo;t wanna lose you, hihi 🙈</p>
           <p class="note-end">Zyada bak bak nahi karunga. Happy Birthday 🎉</p>
         </div>
-        <p class="aday"><span>A day just for you</span></p>
       </div>
       </div>
     </section>
@@ -191,6 +192,8 @@ body{
 b{font-weight:700}
 
 #petal-canvas{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:0}
+/* on the gift stage the cards fill the screen, so the petals drift in front of them */
+#petal-canvas.front{z-index:4}
 
 
 /* smoke bloom that swallows the screen between stage 1 and 2 */
@@ -846,7 +849,8 @@ body.measuring .ch{animation:none !important}
     setTimeout(function(){
       cur.classList.remove("active","leaving");
       document.getElementById(id).classList.add("active");
-      if(id === "s-gift") safe(setStageHeight);
+      cv.classList.toggle("front", id === "s-gift");
+      if(id === "s-gift"){ safe(setStageHeight); spawn("fall", 26); }
       busy = false;
     }, reduced ? 0 : (silent ? 0 : 550));
   }
