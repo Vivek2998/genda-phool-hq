@@ -84,7 +84,7 @@
             <span class="giftbox-emoji" id="giftbox-emoji">🎁</span>
           </button>
         </div>
-        <p class="tip" id="tip">Gift ko <b>dabaye rakho</b> &mdash; chhodna mat 😌</p>
+        <p class="tip" id="tip">Gift pe ek click 👆</p>
       </div>
     </section>
 
@@ -98,14 +98,9 @@
           </p>
 
           <div class="strip" id="gallery"></div>
-
-          <div class="gift-actions">
-            <button class="btn btn-small" id="wish-btn" type="button">Ek aur wish 🌼</button>
-            <button class="btn btn-ghost" id="again-btn" type="button">🔁 Phir se</button>
-          </div>
-
-          <p class="sign">&mdash; tumhara dost, jisne is page pe cake se zyada mehnat ki hai 🌼</p>
         </div>
+
+        <span class="corner-ribbon" aria-hidden="true">🌼 For Shraddha</span>
 
         <div class="giftband giftband-v" aria-hidden="true"></div>
         <div class="giftband giftband-h" aria-hidden="true"></div>
@@ -345,7 +340,7 @@ b{font-weight:700}
 #s-hero.active .arena,#s-hero.active .tip{animation:rise .6s ease 1.25s backwards}
 #s-hero.active .giftbox{animation:bob-gift 2.2s ease-in-out 2s infinite alternate}
 @keyframes bob-gift{ from{transform:translateY(0) rotate(-2deg)} to{transform:translateY(-7px) rotate(2deg)} }
-.giftbox.holding,.giftbox.done{animation:none !important}
+.giftbox.filling,.giftbox.done{animation:none !important}
 @keyframes rise{ from{opacity:0; transform:translateY(18px)} }
 
 /* ============================================================
@@ -371,6 +366,7 @@ b{font-weight:700}
 /* hold-to-open gift — one target, no dodging, made for thumbs */
 .giftbox{
   position:relative; width:132px; height:132px; padding:0; border:0;
+  transition:opacity .2s ease;
   background:none; cursor:pointer; border-radius:50%;
   touch-action:none; -webkit-tap-highlight-color:transparent;
   -webkit-user-select:none; user-select:none;
@@ -383,7 +379,8 @@ b{font-weight:700}
   transition:transform .18s cubic-bezier(.2,1.4,.4,1);
 }
 .giftbox:hover .giftbox-emoji{transform:scale(1.06) rotate(-4deg)}
-.giftbox.holding .giftbox-emoji{animation:rattle .16s linear infinite}
+.giftbox.filling{pointer-events:none}
+.giftbox.filling .giftbox-emoji{animation:rattle .16s linear infinite}
 @keyframes rattle{
   0%{transform:translate(-2px,0) rotate(-5deg) scale(1.08)}
   25%{transform:translate(2px,-2px) rotate(4deg) scale(1.11)}
@@ -404,9 +401,9 @@ b{font-weight:700}
   stroke-dasharray:339.3; stroke-dashoffset:339.3;
   transition:stroke-dashoffset .25s ease;
 }
-.giftbox.holding .ring-fg{
+.giftbox.filling .ring-fg{
   stroke-dashoffset:0;
-  transition:stroke-dashoffset 1.5s linear;
+  transition:stroke-dashoffset 1.15s cubic-bezier(.35,.05,.4,1);
 }
 .tip{
   font-family:var(--mono); font-size:11px; color:var(--ink-soft);
@@ -419,6 +416,21 @@ b{font-weight:700}
    GIFT CARD
    ============================================================ */
 .gift-card{position:relative; overflow:hidden}
+/* a banner folded across the card's top-left corner */
+.corner-ribbon{
+  position:absolute; top:22px; left:-56px; z-index:5;
+  width:200px; padding:6px 0; text-align:center;
+  transform:rotate(-45deg);
+  background:var(--gulabi); color:#FFF7EE;
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.12em;
+  text-transform:uppercase;
+  box-shadow:0 4px 12px rgba(160,95,25,.28);
+}
+/* keep the heading clear of the banner's diagonal */
+.gift-card .gift-inner{padding-top:34px}
+.gift-h{padding-left:26px}
+#s-gift.active .corner-ribbon{animation:ribbon-in .5s cubic-bezier(.2,1.4,.4,1) 1s backwards}
+@keyframes ribbon-in{ from{opacity:0; transform:rotate(-45deg) translateY(-30px)} }
 .gift-inner{min-height:0; overflow-y:auto; padding:2px}
 #s-gift.active .gift-inner{animation:rise .6s ease .5s backwards}
 
@@ -449,6 +461,7 @@ b{font-weight:700}
   padding:14px 2px 12px; scroll-snap-type:x mandatory;
 }
 .polaroid{
+  position:relative;
   flex:0 0 clamp(128px,38vw,158px); scroll-snap-align:center;
   background:#FFFDF7; border-radius:6px;
   padding:8px 8px 0; box-shadow:var(--soft);
@@ -456,6 +469,23 @@ b{font-weight:700}
   transition:transform .25s cubic-bezier(.2,.9,.3,1), box-shadow .25s ease;
 }
 .polaroid:hover,.polaroid:focus-within{transform:rotate(0deg) scale(1.06) translateY(-4px); box-shadow:var(--lift)}
+
+/* the one she calls her favourite gets a wider frame and a marigold mount */
+.polaroid.fav{
+  flex-basis:clamp(158px,46vw,196px);
+  background:linear-gradient(160deg,#FFE9C4 0%,#FFFDF7 55%);
+  padding:11px 11px 0;
+  box-shadow:0 0 0 2px var(--marigold), var(--soft);
+}
+.polaroid.fav .polaroid-cap{color:var(--marigold-deep)}
+.polaroid.fav::after{
+  content:"🌼 favourite"; position:absolute; top:-9px; left:50%;
+  transform:translateX(-50%) rotate(-2deg);
+  background:var(--marigold); color:#3B2412;
+  font-family:var(--mono); font-size:8.5px; letter-spacing:.1em; text-transform:uppercase;
+  padding:3px 9px; border-radius:999px; white-space:nowrap;
+  box-shadow:0 3px 8px rgba(160,95,25,.3);
+}
 .polaroid-img{
   width:100%; aspect-ratio:4/5; object-fit:cover;
   border-radius:2px; display:block; background:var(--ground-2);
@@ -471,15 +501,6 @@ b{font-weight:700}
   font-family:var(--mono); font-size:10px; color:var(--ink-soft);
   text-align:center; padding:8px 3px 10px; margin:0; line-height:1.5;
 }
-.gift-actions{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:4px}
-.btn-small{font-size:12.5px; padding:11px 20px}
-.btn-ghost{
-  background:transparent; color:var(--ink-soft); box-shadow:none;
-  font-size:11.5px; padding:11px 16px;
-}
-.btn-ghost:hover{background:var(--ground-2); box-shadow:none; color:var(--ink); transform:translateY(-1px)}
-.btn-ghost:active{box-shadow:none}
-.sign{font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin:14px 0 0; line-height:1.6}
 
 @media (prefers-reduced-motion:reduce){
   *{animation:none !important; transition:none !important}
@@ -759,90 +780,55 @@ b{font-weight:700}
   }
   tick(); setInterval(tick, 1000);
 
-  /* ---------------- hold the gift to open it ---------------- */
+  /* ---------------- one click opens the gift ---------------- */
   var box  = document.getElementById("giftbox"),
       ring = document.getElementById("ring-fg"),
       tip  = document.getElementById("tip"),
-      HOLD = 1500;
+      FILL = 1150;
 
-  var holdTimer = 0, nudgeTimers = [], opened = false;
+  var opened = false;
 
-  var NUDGE = [
-    [380,  "bas thoda aur… 🌼"],
-    [820,  "aadha ho gaya, mat chhodna!"],
-    [1200, "arre wah, khul raha hai…"]
-  ];
-
-  function clearTimers(){
-    clearTimeout(holdTimer); holdTimer = 0;
-    nudgeTimers.forEach(clearTimeout); nudgeTimers = [];
-  }
-
-  function startHold(e){
-    if(opened || holdTimer) return;
-    if(e){ e.preventDefault(); }
-    box.classList.add("holding");            /* the ring fills via CSS */
-    holdTimer = setTimeout(finishHold, HOLD);
-    NUDGE.forEach(function(n){
-      nudgeTimers.push(setTimeout(function(){ tip.textContent = n[1]; }, n[0]));
-    });
-    nudgeTimers.push(setTimeout(function(){ spawn("burst", 6); }, 700));
-    nudgeTimers.push(setTimeout(function(){ spawn("burst", 8); }, 1150));
-  }
-
-  function cancelHold(e){
-    if(opened || !holdTimer) return;
-    if(e){ e.preventDefault(); }
-    clearTimers();
-    box.classList.remove("holding");
-    tip.innerHTML = "arre chhod diya! 😄 <b>dabaye rakho</b>, gift bhaag nahi raha";
-  }
-
-  function finishHold(){
+  function openGift(e){
     if(opened) return;
+    if(e){ e.preventDefault(); }
     opened = true;
-    clearTimers();
-    box.classList.remove("holding");
-    box.classList.add("done");
-    ring.style.strokeDashoffset = "0";
-    tip.textContent = "khul gaya! 🎁";
-    spawn("ring", 80);
-    spawn("burst", 60);
-    setTimeout(function(){ goTo("s-gift"); }, 520);
+    box.classList.add("filling");          /* the ring fills through CSS */
+    tip.textContent = "khul raha hai… 🌼";
+
+    setTimeout(function(){ spawn("burst", 8); }, 380);
+    setTimeout(function(){ spawn("burst", 12); }, 760);
+
+    setTimeout(function(){
+      box.classList.remove("filling");
+      box.classList.add("done");
+      ring.style.strokeDashoffset = "0";
+      tip.textContent = "khul gaya! 🎁";
+      spawn("ring", 80);
+      spawn("burst", 60);
+      setTimeout(function(){ goTo("s-gift"); }, 480);
+    }, FILL);
   }
 
-  box.addEventListener("pointerdown", startHold);
-  box.addEventListener("pointerup", cancelHold);
-  box.addEventListener("pointerleave", cancelHold);
-  box.addEventListener("pointercancel", cancelHold);
-  box.addEventListener("touchstart", startHold, {passive:false});
-  box.addEventListener("touchend", cancelHold, {passive:false});
-  box.addEventListener("touchcancel", cancelHold, {passive:false});
-  box.addEventListener("contextmenu", function(e){ e.preventDefault(); });
-  box.addEventListener("keydown", function(e){
-    if(e.key === "Enter" || e.key === " "){ e.preventDefault(); startHold(); }
-  });
-  box.addEventListener("keyup", function(e){
-    if(e.key === "Enter" || e.key === " "){ e.preventDefault(); cancelHold(); }
-  });
+  box.addEventListener("click", openGift);
+  box.addEventListener("touchend", function(e){ e.preventDefault(); openGift(); }, {passive:false});
 
   /* ---------------- photos ----------------
      Photo add karne ke liye src mein data URI ya path daalo.
      src khaali = placeholder frame.
   ------------------------------------------- */
   var PHOTOS = [
-    { src:"img/steps.jpg",  caption:"Exhibit A — poori heroine wali entry" },
-    { src:"img/smile.jpg",  caption:"Exhibit B — yeh wali smile hi asli gift hai" },
-    { src:"img/filter.jpg", caption:"Exhibit C — filter ne bhi haar maan li" },
-    { src:"img/pout.jpg",   caption:"Exhibit D — 'main theek hoon' wala face" },
-    { src:"img/art.jpg",    caption:"Exhibit E — artist ne bhi try kiya" }
+    { src:"img/steps.jpg",  caption:"poori heroine wali entry", fav:true },
+    { src:"img/smile.jpg",  caption:"keep smiling like this always baba" },
+    { src:"img/filter.jpg", caption:"filter ne bhi haar maan li" },
+    { src:"img/pout.jpg",   caption:"'main theek hoon' wala face" },
+    { src:"img/art.jpg",    caption:"Daku madam 😄" }
   ];
   (function(){
     var g = document.getElementById("gallery");
     PHOTOS.forEach(function(p, i){
       var fig = document.createElement("figure");
-      fig.className = "polaroid";
-      fig.style.transform = "rotate(" + (i % 2 ? 1.8 : -2.1) + "deg)";
+      fig.className = "polaroid" + (p.fav ? " fav" : "");
+      fig.style.transform = "rotate(" + (p.fav ? 0 : (i % 2 ? 1.8 : -2.1)) + "deg)";
       if(p.src){
         var img = document.createElement("img");
         img.className = "polaroid-img"; img.src = p.src; img.alt = p.caption; img.loading = "lazy";
@@ -859,36 +845,6 @@ b{font-weight:700}
     });
   })();
 
-  /* ---------------- wish lines ---------------- */
-  var WISHES = [
-    "…andar se bhi utni hi jitni bahar se. Aur yeh vibhag ka official statement hai. 🌼",
-    "Tumhari smile ke saamne genda phool bhi thoda sharma jaata hai. Roz ki baat hai.",
-    "Ranchi mein itne phool khilte hain, par sabse bright tum hi ho. Yeh opinion nahi, fact hai.",
-    "Bhagwan kare is saal tumhe woh sab mile jo tum chupke se maangti ho.",
-    "Duaa hai tumhari chai kabhi thandi na ho aur tumhara phone kabhi 1% pe na aaye.",
-    "Tum jaisi dost milna luck ki baat hai — aur main kaafi lucky hoon. 😌",
-    "Har saal tum aur khilti jao, bilkul gende ki tarah — bina kisi ki permission ke.",
-    "Umeed hai is saal tumhari sabse badi problem yeh ho ki kaunsa gamla kahan rakhein.",
-    "Jitna pyaar tum genda phool se karti ho, utna pyaar yeh saal tumse kare. Deal? 🌼"
-  ];
-  var wIdx = 0, wLine = document.getElementById("wish-line");
-  document.getElementById("wish-btn").addEventListener("click", function(){
-    wIdx = (wIdx + 1) % WISHES.length;
-    wLine.textContent = WISHES[wIdx];
-    spawn("burst", 16);
-  });
-
-  /* ---------------- restart ---------------- */
-  document.getElementById("again-btn").addEventListener("click", function(){
-    blown = false;
-    hit.classList.remove("blown");
-    candles.forEach(function(c){ c.classList.remove("out"); });
-    opened = false; clearTimers();
-    box.classList.remove("done","holding"); ring.style.strokeDashoffset = "";
-    tip.innerHTML = "Gift ko <b>dabaye rakho</b> — chhodna mat 😌";
-    wIdx = 0; wLine.textContent = WISHES[0];
-    goTo("s-cake");
-  });
 })();
 </script>
 </body>
