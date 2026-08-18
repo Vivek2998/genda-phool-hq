@@ -11,6 +11,9 @@
 <style>*,*::before,*::after{box-sizing:border-box}html,body{margin:0;padding:0}img,svg,canvas{display:block;max-width:100%}button{font-family:inherit}</style>
 </head>
 <body>
+<button class="sound" id="sound" type="button" aria-label="Music band karo" hidden>
+  <span class="sound-on">🔊</span><span class="sound-off">🔇</span>
+</button>
 <canvas id="petal-canvas" aria-hidden="true"></canvas>
 <div class="bloom" id="bloom" aria-hidden="true"></div>
 <div class="blower" id="blower" aria-hidden="true">😮‍💨</div>
@@ -192,6 +195,23 @@ body{
 b{font-weight:700}
 
 #petal-canvas{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:0}
+
+.sound{
+  position:fixed; top:12px; right:12px; z-index:9;
+  width:40px; height:40px; padding:0; border:0; border-radius:50%;
+  background:rgba(255,252,244,.9); box-shadow:var(--soft);
+  font-size:18px; line-height:1; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+  transition:transform .15s ease;
+}
+.sound:hover{transform:scale(1.08)}
+.sound:active{transform:scale(.94)}
+.sound:focus-visible{outline:3px dashed var(--gulabi); outline-offset:3px}
+.sound[hidden]{display:none}
+.sound .sound-off{display:none}
+.sound.muted .sound-on{display:none}
+.sound.muted .sound-off{display:block}
 /* on the gift stage the cards fill the screen, so the petals drift in front of them */
 #petal-canvas.front{z-index:4}
 
@@ -838,6 +858,89 @@ body.measuring .ch{animation:none !important}
   }
   window.addEventListener("resize", function(){ safe(setStageHeight); });
 
+  /* ---------------- music ----------------
+     An mp3 dropped in as music.mp3 wins; otherwise a small synth plays the
+     Happy Birthday melody, which has been public domain since 2016.
+  ------------------------------------------------------------------ */
+  var music = (function(){
+    var btn = document.getElementById("sound");
+    var muted = false, started = false;
+    var el = null, ctx = null, gain = null, timer = 0;
+
+    /* note, beats */
+    var TUNE = [
+      ["G4",.75],["G4",.25],["A4",1],["G4",1],["C5",1],["B4",2],
+      ["G4",.75],["G4",.25],["A4",1],["G4",1],["D5",1],["C5",2],
+      ["G4",.75],["G4",.25],["G5",1],["E5",1],["C5",1],["B4",1],["A4",2],
+      ["F5",.75],["F5",.25],["E5",1],["C5",1],["D5",1],["C5",3]
+    ];
+    var HZ = {G4:392.00, A4:440.00, B4:493.88, C5:523.25, D5:587.33,
+              E5:659.25, F5:698.46, G5:783.99};
+    var BEAT = 0.42;
+
+    function bell(t, hz, beats){
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = "triangle"; o.frequency.value = hz;
+      var dur = Math.min(beats * BEAT * 1.6, 1.6);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.5, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(gain);
+      o.start(t); o.stop(t + dur + 0.05);
+    }
+
+    function playOnce(){
+      var t = ctx.currentTime + 0.15, total = 0;
+      TUNE.forEach(function(n){
+        bell(t + total, HZ[n[0]], n[1]);
+        total += n[1] * BEAT;
+      });
+      return total + 2.4;                       /* a rest before it comes round again */
+    }
+
+    function loop(){
+      if(muted || !ctx) return;
+      var next = playOnce();
+      timer = setTimeout(loop, next * 1000);
+    }
+
+    function startSynth(){
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return false;
+      ctx = new AC();
+      gain = ctx.createGain();
+      gain.gain.value = 0.16;
+      gain.connect(ctx.destination);
+      loop();
+      return true;
+    }
+
+    return {
+      start: function(){
+        if(started) return;
+        started = true;
+        el = new Audio("music.mp3");
+        el.loop = true; el.volume = 0.45;
+        el.play().then(function(){
+          btn.hidden = false;                    /* the file exists and is playing */
+        }).catch(function(){
+          el = null;
+          if(startSynth()) btn.hidden = false;
+        });
+      },
+      toggle: function(){
+        muted = !muted;
+        btn.classList.toggle("muted", muted);
+        btn.setAttribute("aria-label", muted ? "Music chalu karo" : "Music band karo");
+        if(el){ el.muted = muted; return; }
+        if(!ctx) return;
+        if(muted){ clearTimeout(timer); ctx.suspend(); }
+        else{ ctx.resume(); loop(); }
+      }
+    };
+  })();
+  document.getElementById("sound").addEventListener("click", function(){ music.toggle(); });
+
   /* ---------------- screen router ---------------- */
   var busy = false;
   function goTo(id, silent){
@@ -876,6 +979,7 @@ body.measuring .ch{animation:none !important}
     if(blown) return;
     blown = true;
     hit.classList.add("blown");
+    safe(music.start);                     /* the tap is the gesture audio needs */
 
     if(fine && !reduced){
       blower.classList.remove("on");
