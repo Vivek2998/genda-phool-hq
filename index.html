@@ -76,11 +76,16 @@
         </div>
         <p class="cd-caption" id="cd-caption">&hellip;bacha hua time</p>
 
-        <div class="arena" id="arena">
-          <button class="btn btn-yes" id="yes-btn" type="button">🎁 Gift lelo</button>
-          <button class="btn btn-no" id="no-btn" type="button">Nahi 🙄</button>
+        <div class="arena">
+          <button class="giftbox" id="giftbox" type="button" aria-label="Gift kholne ke liye dabaye rakho">
+            <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="ring-bg" cx="60" cy="60" r="54"/>
+              <circle class="ring-fg" id="ring-fg" cx="60" cy="60" r="54"/>
+            </svg>
+            <span class="giftbox-emoji" id="giftbox-emoji">🎁</span>
+          </button>
         </div>
-        <p class="tip" id="tip">(dono pe click kar sakti ho, tension mat lo 😇)</p>
+        <p class="tip" id="tip">Gift ko <b>dabaye rakho</b> &mdash; chhodna mat 😌</p>
       </div>
     </section>
 
@@ -337,6 +342,9 @@ b{font-weight:700}
 #s-hero.active .hero-sub{animation:rise .6s ease .95s backwards}
 #s-hero.active .countdown,#s-hero.active .cd-caption{animation:rise .6s ease 1.1s backwards}
 #s-hero.active .arena,#s-hero.active .tip{animation:rise .6s ease 1.25s backwards}
+#s-hero.active .giftbox{animation:bob-gift 2.2s ease-in-out 2s infinite alternate}
+@keyframes bob-gift{ from{transform:translateY(0) rotate(-2deg)} to{transform:translateY(-7px) rotate(2deg)} }
+.giftbox.holding,.giftbox.done{animation:none !important}
 @keyframes rise{ from{opacity:0; transform:translateY(18px)} }
 
 /* ============================================================
@@ -359,19 +367,52 @@ b{font-weight:700}
   display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
   margin-top:12px;
 }
-.btn-yes{
-  background:var(--leaf); color:#FFFDF3; font-size:15.5px; padding:14px 22px;
-  box-shadow:0 5px 0 #35692F, var(--soft);
+/* hold-to-open gift — one target, no dodging, made for thumbs */
+.giftbox{
+  position:relative; width:132px; height:132px; padding:0; border:0;
+  background:none; cursor:pointer; border-radius:50%;
+  touch-action:none; -webkit-tap-highlight-color:transparent;
+  -webkit-user-select:none; user-select:none;
 }
-.btn-yes:hover{transform:translateY(-2px) scale(1.05); box-shadow:0 7px 0 #35692F, var(--lift)}
-.btn-yes:active{box-shadow:0 1px 0 #35692F, var(--soft)}
-.btn-no{background:var(--surface); color:var(--ink-soft); box-shadow:0 5px 0 #F0CFA0, var(--soft)}
-.btn-no:hover{box-shadow:0 7px 0 #F0CFA0, var(--lift)}
-.btn-no.loose{position:absolute; margin:0; transition:left .16s ease, top .16s ease, transform .16s ease}
+.giftbox:focus-visible{outline:3px dashed var(--gulabi); outline-offset:6px}
+.giftbox-emoji{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:66px; line-height:1;
+  filter:drop-shadow(0 8px 14px rgba(160,95,25,.34));
+  transition:transform .18s cubic-bezier(.2,1.4,.4,1);
+}
+.giftbox:hover .giftbox-emoji{transform:scale(1.06) rotate(-4deg)}
+.giftbox.holding .giftbox-emoji{animation:rattle .16s linear infinite}
+@keyframes rattle{
+  0%{transform:translate(-2px,0) rotate(-5deg) scale(1.08)}
+  25%{transform:translate(2px,-2px) rotate(4deg) scale(1.11)}
+  50%{transform:translate(-1px,2px) rotate(-3deg) scale(1.09)}
+  75%{transform:translate(2px,1px) rotate(5deg) scale(1.12)}
+  100%{transform:translate(-2px,0) rotate(-5deg) scale(1.08)}
+}
+.giftbox.done .giftbox-emoji{animation:gift-pop .5s cubic-bezier(.2,1.6,.4,1) forwards}
+@keyframes gift-pop{
+  40%{transform:scale(1.5) rotate(-12deg)}
+  100%{transform:scale(.2) rotate(20deg); opacity:0}
+}
+.ring{position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg)}
+.ring circle{fill:none; stroke-width:7; stroke-linecap:round}
+.ring-bg{stroke:#F3D9AE}
+.ring-fg{
+  stroke:var(--marigold-deep);
+  stroke-dasharray:339.3; stroke-dashoffset:339.3;
+  transition:stroke-dashoffset .25s ease;
+}
+.giftbox.holding .ring-fg{
+  stroke-dashoffset:0;
+  transition:stroke-dashoffset 1.5s linear;
+}
 .tip{
-  font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);
-  margin:8px 0 0; min-height:2.6em; line-height:1.6;
+  font-family:var(--mono); font-size:11px; color:var(--ink-soft);
+  margin:12px 0 0; min-height:2.8em; line-height:1.6;
+  max-width:30ch; margin-inline:auto;
 }
+.tip b{color:var(--marigold-deep)}
 
 /* ============================================================
    GIFT CARD
@@ -720,66 +761,83 @@ b{font-weight:700}
   }
   tick(); setInterval(tick, 1000);
 
-  /* ---------------- the runaway NO ---------------- */
-  var arena = document.getElementById("arena"),
-      tip   = document.getElementById("tip"),
-      yes   = document.getElementById("yes-btn"),
-      no    = document.getElementById("no-btn");
-  var DODGE = [
-    "arre kahan ja raha hai ye button…",
-    "haha, itni aasani se nahi.",
-    "yeh button aaj chhutti pe hai.",
-    "koshish acchi thi. phir se try karo. 😄",
-    "vibhag ne 'Nahi' option suspend kar diya hai.",
-    "button: 'main bhaag raha hoon, mujhe mat pakdo'",
-    "technically woh option hai. practically nahi.",
-    "cheating? nahi ji, yeh to feature hai.",
-    "thak gayi? Gift lelo bilkul paas mein hai. 😌"
+  /* ---------------- hold the gift to open it ---------------- */
+  var box  = document.getElementById("giftbox"),
+      ring = document.getElementById("ring-fg"),
+      tip  = document.getElementById("tip"),
+      HOLD = 1500;
+
+  var holdTimer = 0, nudgeTimers = [], opened = false;
+
+  var NUDGE = [
+    [380,  "bas thoda aur… 🌼"],
+    [820,  "aadha ho gaya, mat chhodna!"],
+    [1200, "arre wah, khul raha hai…"]
   ];
-  var loose = false, dodges = 0;
-  function place(){
-    var ar = arena.getBoundingClientRect();
-    no.style.left = (Math.random()*Math.max(0, ar.width  - no.offsetWidth  - 6)) + "px";
-    no.style.top  = (Math.random()*Math.max(0, ar.height - no.offsetHeight - 6)) + "px";
-    no.style.transform = "rotate(" + ((Math.random()*24)-12).toFixed(1) + "deg)";
+
+  function clearTimers(){
+    clearTimeout(holdTimer); holdTimer = 0;
+    nudgeTimers.forEach(clearTimeout); nudgeTimers = [];
   }
-  function flee(e){
-    if(e){ e.preventDefault(); e.stopPropagation(); }
-    if(!loose){
-      var r = no.getBoundingClientRect(), ar = arena.getBoundingClientRect();
-      no.classList.add("loose");
-      no.style.left = (r.left - ar.left) + "px";
-      no.style.top  = (r.top  - ar.top ) + "px";
-      loose = true;
-    }
-    place();
-    dodges++;
-    tip.textContent = DODGE[Math.min(dodges - 1, DODGE.length - 1)];
-    if(dodges === 6){ no.style.fontSize = "12px"; no.textContent = "Nahi… 😶"; }
-    if(dodges === 9){ no.style.opacity = ".6"; no.textContent = "nahi 🥲"; }
-  }
-  no.addEventListener("pointerdown", flee);
-  no.addEventListener("pointerenter", flee);
-  no.addEventListener("touchstart", flee, {passive:false});
-  no.addEventListener("click", flee);
-  no.addEventListener("focus", function(){ flee(); yes.focus(); });
-  if(fine){
-    arena.addEventListener("pointermove", function(ev){
-      var r = no.getBoundingClientRect();
-      if(Math.hypot(ev.clientX-(r.left+r.width/2), ev.clientY-(r.top+r.height/2)) < 80) flee();
+
+  function startHold(e){
+    if(opened || holdTimer) return;
+    if(e){ e.preventDefault(); }
+    box.classList.add("holding");            /* the ring fills via CSS */
+    holdTimer = setTimeout(finishHold, HOLD);
+    NUDGE.forEach(function(n){
+      nudgeTimers.push(setTimeout(function(){ tip.textContent = n[1]; }, n[0]));
     });
+    nudgeTimers.push(setTimeout(function(){ spawn("burst", 6); }, 700));
+    nudgeTimers.push(setTimeout(function(){ spawn("burst", 8); }, 1150));
   }
-  yes.addEventListener("click", function(){ spawn("burst", 100); goTo("s-gift"); });
+
+  function cancelHold(e){
+    if(opened || !holdTimer) return;
+    if(e){ e.preventDefault(); }
+    clearTimers();
+    box.classList.remove("holding");
+    tip.innerHTML = "arre chhod diya! 😄 <b>dabaye rakho</b>, gift bhaag nahi raha";
+  }
+
+  function finishHold(){
+    if(opened) return;
+    opened = true;
+    clearTimers();
+    box.classList.remove("holding");
+    box.classList.add("done");
+    ring.style.strokeDashoffset = "0";
+    tip.textContent = "khul gaya! 🎁";
+    spawn("ring", 80);
+    spawn("burst", 60);
+    setTimeout(function(){ goTo("s-gift"); }, 520);
+  }
+
+  box.addEventListener("pointerdown", startHold);
+  box.addEventListener("pointerup", cancelHold);
+  box.addEventListener("pointerleave", cancelHold);
+  box.addEventListener("pointercancel", cancelHold);
+  box.addEventListener("touchstart", startHold, {passive:false});
+  box.addEventListener("touchend", cancelHold, {passive:false});
+  box.addEventListener("touchcancel", cancelHold, {passive:false});
+  box.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+  box.addEventListener("keydown", function(e){
+    if(e.key === "Enter" || e.key === " "){ e.preventDefault(); startHold(); }
+  });
+  box.addEventListener("keyup", function(e){
+    if(e.key === "Enter" || e.key === " "){ e.preventDefault(); cancelHold(); }
+  });
 
   /* ---------------- photos ----------------
      Photo add karne ke liye src mein data URI ya path daalo.
      src khaali = placeholder frame.
   ------------------------------------------- */
   var PHOTOS = [
-    { src:"", caption:"Exhibit A — muskurate hue pakdi gayi" },
-    { src:"", caption:"Exhibit B — genda phool ke saath, obviously" },
-    { src:"", caption:"Exhibit C — 'ek aur photo' ka result" },
-    { src:"", caption:"Exhibit D — Ranchi wali energy" }
+    { src:"img/steps.jpg",  caption:"Exhibit A — poori heroine wali entry" },
+    { src:"img/smile.jpg",  caption:"Exhibit B — yeh wali smile hi asli gift hai" },
+    { src:"img/filter.jpg", caption:"Exhibit C — filter ne bhi haar maan li" },
+    { src:"img/pout.jpg",   caption:"Exhibit D — 'main theek hoon' wala face" },
+    { src:"img/art.jpg",    caption:"Exhibit E — artist ne bhi try kiya" }
   ];
   (function(){
     var g = document.getElementById("gallery");
@@ -824,11 +882,12 @@ b{font-weight:700}
 
   /* ---------------- restart ---------------- */
   document.getElementById("again-btn").addEventListener("click", function(){
-    blown = false; loose = false; dodges = 0;
+    blown = false;
     hit.classList.remove("blown");
     candles.forEach(function(c){ c.classList.remove("out"); });
-    no.classList.remove("loose"); no.style.cssText = ""; no.textContent = "Nahi 🙄";
-    tip.textContent = "(dono pe click kar sakti ho, tension mat lo 😇)";
+    opened = false; clearTimers();
+    box.classList.remove("done","holding"); ring.style.strokeDashoffset = "";
+    tip.innerHTML = "Gift ko <b>dabaye rakho</b> — chhodna mat 😌";
     wIdx = 0; wLine.textContent = WISHES[0];
     goTo("s-cake");
   });
