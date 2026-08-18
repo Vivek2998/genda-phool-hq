@@ -878,30 +878,70 @@ body.measuring .ch{animation:none !important}
               E5:659.25, F5:698.46, G5:783.99};
     var BEAT = 0.42;
 
-    function bell(t, hz, beats){
+    var noiseBuf = null;
+    function noiseSource(){
+      if(!noiseBuf){
+        noiseBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.6), ctx.sampleRate);
+        var data = noiseBuf.getChannelData(0);
+        for(var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      }
+      var src = ctx.createBufferSource();
+      src.buffer = noiseBuf;
+      return src;
+    }
+
+    /* a whistled note: a sine that scoops into pitch, with vibrato and a breath of air */
+    function whistle(t, hz, beats){
+      var dur = Math.min(beats * BEAT * 0.92, 1.5);
+
       var o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = "triangle"; o.frequency.value = hz;
-      var dur = Math.min(beats * BEAT * 1.6, 1.6);
+      o.type = "sine";
+      o.frequency.setValueAtTime(hz * 0.985, t);
+      o.frequency.exponentialRampToValueAtTime(hz, t + 0.06);
+
+      var vib = ctx.createOscillator(), vibDepth = ctx.createGain();
+      vib.frequency.value = 5.2;
+      vibDepth.gain.setValueAtTime(0, t);
+      vibDepth.gain.linearRampToValueAtTime(hz * 0.006, t + 0.18);
+      vib.connect(vibDepth); vibDepth.connect(o.frequency);
+
       g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.5, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.6, t + 0.045);
+      g.gain.setValueAtTime(0.6, t + dur * 0.72);
       g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
       o.connect(g); g.connect(gain);
       o.start(t); o.stop(t + dur + 0.05);
+      vib.start(t); vib.stop(t + dur + 0.05);
+
+      var br = noiseSource(), bf = ctx.createBiquadFilter(), bg = ctx.createGain();
+      bf.type = "bandpass"; bf.frequency.value = hz * 2; bf.Q.value = 1.2;
+      bg.gain.setValueAtTime(0.0001, t);
+      bg.gain.exponentialRampToValueAtTime(0.05, t + 0.05);
+      bg.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      br.connect(bf); bf.connect(bg); bg.connect(gain);
+      br.start(t); br.stop(t + dur);
+    }
+
+    /* a finger snap: a short, bright crack of noise */
+    function snap(t){
+      var src = noiseSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      f.type = "bandpass"; f.frequency.value = 2400; f.Q.value = 1.6;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.42, t + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.11);
+      src.connect(f); f.connect(g); g.connect(gain);
+      src.start(t); src.stop(t + 0.14);
     }
 
     function playOnce(){
       var t = ctx.currentTime + 0.15, total = 0;
       TUNE.forEach(function(n){
-        bell(t + total, HZ[n[0]], n[1]);
+        whistle(t + total, HZ[n[0]], n[1]);
         total += n[1] * BEAT;
       });
-      return total + 2.4;                       /* a rest before it comes round again */
-    }
-
-    function loop(){
-      if(muted || !ctx) return;
-      var next = playOnce();
-      timer = setTimeout(loop, next * 1000);
+      /* snaps ride the off-beats underneath the whole phrase */
+      for(var b = 1; b * BEAT < total; b += 2) snap(t + b * BEAT);
+      return total + 2.2;                       /* a rest before it comes round again */
     }
 
     function startSynth(){
@@ -909,7 +949,7 @@ body.measuring .ch{animation:none !important}
       if(!AC) return false;
       ctx = new AC();
       gain = ctx.createGain();
-      gain.gain.value = 0.16;
+      gain.gain.value = 0.2;
       gain.connect(ctx.destination);
       loop();
       return true;
