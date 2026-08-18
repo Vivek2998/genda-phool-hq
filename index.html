@@ -66,7 +66,7 @@
           <span class="l l-3"><i data-txt="Shraddha"></i></span>
         </h1>
 
-        <p class="hero-sub">Aaj se tum officially ek saal aur senior ho gayi ho. Badhai ho, buzurg. 🌼</p>
+        <p class="hero-sub">Badhai ho buzurg 😜</p>
 
         <div class="countdown" id="countdown">
           <div class="cd-box"><span class="cd-num" id="cd-d">--</span><span class="cd-lab">din</span></div>
@@ -74,7 +74,6 @@
           <div class="cd-box"><span class="cd-num" id="cd-m">--</span><span class="cd-lab">minute</span></div>
           <div class="cd-box"><span class="cd-num" id="cd-s">--</span><span class="cd-lab">second</span></div>
         </div>
-        <p class="cd-caption" id="cd-caption">&hellip;bacha hua time</p>
 
         <div class="arena">
           <button class="giftbox" id="giftbox" type="button" aria-label="Gift kholne ke liye dabaye rakho">
@@ -322,8 +321,11 @@ b{font-weight:700}
 .l:hover .ch{animation:wave-ch .5s ease-in-out}
 @keyframes wave-ch{ 40%{transform:translateY(-9px) rotate(-6deg)} }
 
-.hero-sub{max-width:32ch; margin:18px auto 0; font-size:16px; color:var(--ink-soft)}
-.countdown{display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin:16px 0 7px}
+.hero-sub{
+  max-width:32ch; margin:18px auto 0;
+  font-size:22px; color:var(--ink-soft);
+}
+.countdown{display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin:18px 0 0}
 .cd-box{
   background:var(--surface); border-radius:15px;
   padding:9px 5px 7px; min-width:64px; box-shadow:var(--soft);
@@ -338,9 +340,8 @@ b{font-weight:700}
 }
 .cd-num.pop{animation:pop .35s ease}
 @keyframes pop{ 50%{transform:scale(1.3)} }
-.cd-caption{font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin:0}
 #s-hero.active .hero-sub{animation:rise .6s ease .95s backwards}
-#s-hero.active .countdown,#s-hero.active .cd-caption{animation:rise .6s ease 1.1s backwards}
+#s-hero.active .countdown{animation:rise .6s ease 1.1s backwards}
 #s-hero.active .arena,#s-hero.active .tip{animation:rise .6s ease 1.25s backwards}
 #s-hero.active .giftbox{animation:bob-gift 2.2s ease-in-out 2s infinite alternate}
 @keyframes bob-gift{ from{transform:translateY(0) rotate(-2deg)} to{transform:translateY(-7px) rotate(2deg)} }
@@ -730,8 +731,7 @@ b{font-weight:700}
 
   /* ---------------- countdown ---------------- */
   var elD=document.getElementById("cd-d"), elH=document.getElementById("cd-h"),
-      elM=document.getElementById("cd-m"), elS=document.getElementById("cd-s"),
-      cap=document.getElementById("cd-caption");
+      elM=document.getElementById("cd-m"), elS=document.getElementById("cd-s");
   function pad(n){ return String(n).padStart(2,"0"); }
   function setSec(v){
     if(elS.textContent !== v && !reduced){
@@ -747,7 +747,6 @@ b{font-weight:700}
       elH.textContent = pad(Math.floor(left/3.6e6));
       elM.textContent = pad(Math.floor(left/6e4)%60);
       setSec(pad(Math.floor(left/1000)%60));
-      cap.textContent = "AAJ HAI! Itna time bacha hai celebrate karne ke liye.";
       return;
     }
     var target = new Date(y,7,19,0,0,0);
@@ -757,7 +756,6 @@ b{font-weight:700}
     elH.textContent = pad(Math.floor(d/3.6e6)%24);
     elM.textContent = pad(Math.floor(d/6e4)%60);
     setSec(pad(Math.floor(d/1000)%60));
-    cap.textContent = "…agle birthday mein bacha hua time";
   }
   tick(); setInterval(tick, 1000);
 
