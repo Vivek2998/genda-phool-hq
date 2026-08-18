@@ -91,6 +91,7 @@
     <!-- ================= SCREEN 3 — GIFT ================= -->
     <section class="screen" id="s-gift">
       <div class="gift-stack">
+      <div class="gift-page">
       <div class="gift-wrap">
       <div class="card gift-card">
         <div class="gift-inner">
@@ -121,11 +122,12 @@
           fill="none" stroke="currentColor" stroke-width="2.4"
           stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
+      </div>
 
       <div class="card note-card">
         <div class="note">
           <p>Happy Birthday Shraddha, may God bless you with everything you wish for.</p>
-          <p>Sorry, I have irritated you a lot &mdash; but it&rsquo;s not my fault,
+          <p>Sorry, I have irritated you a lot but it&rsquo;s not my fault,
              aap ho hi itni achhi ki I just don&rsquo;t wanna lose you, hihi 🙈</p>
           <p class="note-end">Zyada bak bak nahi karunga. Happy Birthday 🎉</p>
         </div>
@@ -261,6 +263,12 @@ b{font-weight:700}
 .gift-stack{
   display:flex; flex-direction:column; align-items:stretch;
   gap:12px; width:100%; max-width:520px; margin:auto; padding:4px 0 8px;
+}
+/* one screenful, so the note below it only arrives on scroll */
+.gift-page{
+  min-height:var(--stage-h, calc(100dvh - clamp(58px,9vh,104px) - 30px));
+  flex:0 0 auto;
+  display:flex; flex-direction:column; justify-content:center; gap:14px;
 }
 .gift-wrap{position:relative; width:100%; display:flex; flex-direction:column}
 .gift-stack .card{max-width:none; width:100%; max-height:none}
@@ -605,7 +613,7 @@ body.measuring .ch{animation:none !important}
 }
 .scrollhint svg{
   width:26px; height:26px;
-  animation:hint-bob 1.6s ease-in-out infinite;
+  animation:hint-bob 1.6s ease-in-out 1.9s infinite backwards;
 }
 @keyframes hint-bob{
   0%,100%{transform:translateY(-3px); opacity:.45}
@@ -806,7 +814,7 @@ body.measuring .ch{animation:none !important}
     ctx.restore();
   };
   if(!reduced) safe(function(){
-    for(var i=0;i<18;i++) petals.push(new Petal("fall"));
+    for(var i=0;i<52;i++) petals.push(new Petal("fall"));
     (function loop(){
       ctx.clearRect(0,0,W,H);
       for(var i=petals.length-1;i>=0;i--){
@@ -817,6 +825,15 @@ body.measuring .ch{animation:none !important}
     })();
   });
   function spawn(mode, n){ if(!reduced) safe(function(){ for(var i=0;i<n;i++) petals.push(new Petal(mode)); }); }
+
+  /* the gift page is exactly one screenful tall, whatever the phone */
+  function setStageHeight(){
+    var sc = document.getElementById("s-gift");
+    var cs = getComputedStyle(sc);
+    var h = sc.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    if(h > 0) document.documentElement.style.setProperty("--stage-h", h + "px");
+  }
+  window.addEventListener("resize", function(){ safe(setStageHeight); });
 
   /* ---------------- screen router ---------------- */
   var busy = false;
@@ -829,6 +846,7 @@ body.measuring .ch{animation:none !important}
     setTimeout(function(){
       cur.classList.remove("active","leaving");
       document.getElementById(id).classList.add("active");
+      if(id === "s-gift") safe(setStageHeight);
       busy = false;
     }, reduced ? 0 : (silent ? 0 : 550));
   }
